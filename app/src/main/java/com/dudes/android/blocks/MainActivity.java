@@ -236,6 +236,13 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
             mSoundEffectHelper.playYaySound();
             mShotCount++;
             mShoutCountText.setText(String.valueOf(mShotCount));
+            mShoutCountText.animate().scaleX(1.5f).scaleY(1.5f).setDuration(100).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(final Animator animation) {
+                    super.onAnimationEnd(animation);
+                    mShoutCountText.animate().scaleX(1f).scaleY(1f).setDuration(100).setListener(null);
+                }
+            });
         } else {
             mIsCubeShot = false;
         }
