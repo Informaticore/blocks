@@ -3,6 +3,7 @@ package com.dudes.android.blocks;
 import android.animation.*;
 import android.app.Activity;
 import android.graphics.Rect;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
@@ -28,6 +29,7 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
     private View mHitAnimationView;
     private AnimatorSet mCubeAnimSet;
     private boolean mIsCubeShot;
+    private MediaPlayer mMediaPlayer;
 
     private SoundEffectHelper mSoundEffectHelper;
 
@@ -43,7 +45,11 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
         initBackground();
         initGame();
         executeLeapMotionTask();
+
+        mMediaPlayer = MediaPlayer.create(this, R.raw.music2);
+        mMediaPlayer.setLooping(true);
     }
+
 
     private void initGame() {
         mHudView = (HudView) findViewById(R.id.hudview);
@@ -87,6 +93,13 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
             }, 600 * i);
         }
         addAnimatedCube();
+        mMediaPlayer.start();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mMediaPlayer.stop();
     }
 
     private void addAnimatedCloud(){
