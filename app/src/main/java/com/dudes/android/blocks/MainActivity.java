@@ -127,7 +127,7 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
             }
         });
         AnimatorSet animSet = new AnimatorSet();
-        animSet.setDuration(3000);
+        animSet.setDuration(6000);
         animSet.playTogether(scaleX, sclaeY, translationY, rotation);
         animSet.addListener(new AnimatorListenerAdapter() {
             @Override
