@@ -10,6 +10,7 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import com.plattysoft.leonids.ParticleSystem;
 
 import java.util.Random;
 
@@ -19,6 +20,8 @@ public class MainActivity extends Activity {
     private RelativeLayout mContainer;
     private Random mRandom;
     private DisplayMetrics mMetrics;
+
+    private int[] mCubes = {R.drawable.cube001,R.drawable.cube002,R.drawable.cube003};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,9 +38,7 @@ public class MainActivity extends Activity {
 
     private void initBackground() {
         mContainer = (RelativeLayout) findViewById(R.id.container);
-//        LayerDrawable background = (LayerDrawable) mContainer.getBackground();
-//        AnimationDrawable drawable = (AnimationDrawable) background.findDrawableByLayerId(R.id.stars);
-//        drawable.start();
+
     }
 
     @Override
@@ -64,6 +65,7 @@ public class MainActivity extends Activity {
                 }
             }, 600 * i);
         }
+        addAnimatedCube();
     }
 
     private void addAnimatedCloud(){
@@ -71,6 +73,7 @@ public class MainActivity extends Activity {
         cloud.setImageResource(R.drawable.cloud_001);
         mContainer.addView(cloud);
         cloud.setTranslationX(mRandom.nextInt(mMetrics.widthPixels));
+        cloud.setTranslationY(-(50 * mMetrics.density));
         cloud.setScaleY(0.0f);
         cloud.setScaleX(0.0f);
         cloud.setAlpha(0.5f);
@@ -79,7 +82,7 @@ public class MainActivity extends Activity {
         alpha.setStartDelay(2500);
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(cloud, "scaleX", 5.0f);
         ObjectAnimator sclaeY = ObjectAnimator.ofFloat(cloud, "scaleY", 5.0f);
-        ObjectAnimator translationY = ObjectAnimator.ofFloat(cloud, "translationY", mMetrics.heightPixels);
+        ObjectAnimator translationY = ObjectAnimator.ofFloat(cloud, "translationY", mMetrics.heightPixels + (500 * mMetrics.density));
         AnimatorSet animSet = new AnimatorSet();
         animSet.setDuration(3000);
         animSet.playTogether(alpha, scaleX, sclaeY, translationY);
@@ -93,5 +96,48 @@ public class MainActivity extends Activity {
         });
         animSet.start();
     }
+
+    private void addAnimatedCube(){
+        final ImageView cube = new ImageView(this);
+        cube.setImageResource(mCubes[mRandom.nextInt(3)]);
+        mContainer.addView(cube);
+        cube.setTranslationX(mRandom.nextInt(mMetrics.widthPixels));
+        cube.setTranslationY(0);
+        cube.setScaleY(0.0f);
+        cube.setScaleX(0.0f);
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(cube, "scaleX", 5.0f);
+        ObjectAnimator sclaeY = ObjectAnimator.ofFloat(cube, "scaleY", 5.0f);
+        ObjectAnimator rotation = ObjectAnimator.ofFloat(cube, "rotation", mRandom.nextInt(360));
+        ObjectAnimator translationY = ObjectAnimator.ofFloat(cube, "translationY", mMetrics.heightPixels + (500 * mMetrics.density));
+        AnimatorSet animSet = new AnimatorSet();
+        animSet.setDuration(3000);
+        animSet.playTogether(scaleX, sclaeY, translationY, rotation);
+        animSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                mContainer.removeView(cube);
+                addAnimatedCube();
+            }
+        });
+        animSet.start();
+    }
+
+    public void onClickSomething(View view) {
+        new ParticleSystem(this, 20, R.drawable.smallcubes, 1000)
+                .setSpeedRange(0.5f, 0.8f)
+                .setInitialRotationRange(0, 360)
+                .setRotationSpeed(144)
+                .setRotationSpeedRange(0.5f, 0.8f)
+                .setFadeOut(200)
+                .oneShot(mContainer, 50);
+    }
+
+//    private boolean checkCollision(Rect asteroidBounds, ImageView asteroid) {
+//        asteroidBounds.set((int)(asteroid.getTranslationX()), (int)(asteroid.getTop() + asteroid.getTranslationY()), (int) (asteroid.getRight() + asteroid.getTranslationX()), (int)(asteroid.getBottom() + asteroid.getTranslationY()));
+//        mSpaceShipBounds.set((int) mSpaceShip.getTranslationX(), (int) (mSpaceShip.getTranslationY()), (int) (mSpaceShip.getRight() + mSpaceShip.getTranslationX()), (int) ((mSpaceShip.getBottom() + mSpaceShip.getTranslationY()) - (28 * mMetrics.density)));
+//        return asteroidBounds.intersect(mSpaceShipBounds);
+////        return false;
+//    }
 
 }
