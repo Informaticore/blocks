@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import com.plattysoft.leonids.ParticleSystem;
 
 import java.util.Random;
@@ -30,6 +31,8 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
     private boolean mIsCubeShot;
 
     private SoundEffectHelper mSoundEffectHelper;
+    private TextView mShoutCountText;
+    private int mShotCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +42,7 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
         mRandom = new Random();
         mMetrics = getResources().getDisplayMetrics();
         mSoundEffectHelper = new SoundEffectHelper();
+        mShoutCountText = (TextView) findViewById(R.id.main_shot_count_text);
 
         initBackground();
         initGame();
@@ -215,7 +219,12 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
                     .setFadeOut(200)
                     .oneShot(mHitAnimationView, 50);
             mCubeAnimSet.cancel();
+            mIsCubeShot = true;
             mSoundEffectHelper.playYaySound();
+            mShotCount++;
+            mShoutCountText.setText(String.valueOf(mShotCount));
+        } else {
+            mIsCubeShot = false;
         }
     }
 //
