@@ -14,15 +14,16 @@ import com.plattysoft.leonids.ParticleSystem;
 import java.util.Random;
 
 
-public class MainActivity extends Activity implements Game.OnShootListener {
+public class MainActivity extends Activity implements HudView.OnShootListener, LeapMotionTask.MotionListener {
 
     private RelativeLayout mContainer;
     private Random mRandom;
     private DisplayMetrics mMetrics;
-    private Game mGame;
+    private HudView mHudView;
 
     private int[] mCubes = {R.drawable.cube001,R.drawable.cube002,R.drawable.cube003};
     private Rect mCubeRect;
+    private boolean mIsShooting;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,17 +35,20 @@ public class MainActivity extends Activity implements Game.OnShootListener {
 
         initBackground();
         initGame();
-        new LeapMotionTask().execute();
+        executeLeapMotionTask();
     }
 
     private void initGame() {
-        mGame = (Game) findViewById(R.id.game);
-        mGame.setOnShootListener(this);
+        mHudView = (HudView) findViewById(R.id.hudview);
+        mHudView.setOnShootListener(this);
     }
 
     private void initBackground() {
         mContainer = (RelativeLayout) findViewById(R.id.container);
+    }
 
+    private void executeLeapMotionTask() {
+        new LeapMotionTask(this).execute();
     }
 
     @Override
@@ -153,6 +157,23 @@ public class MainActivity extends Activity implements Game.OnShootListener {
                     .setFadeOut(200)
                     .oneShot(mContainer, 50);
         }
+    }
+
+    @Override
+    public void onFingerMotionDetected(final float fingerX, final float fingerY) {
+        mHudView.setPosition(fingerX, fingerY);
+    }
+
+    @Override
+    public void onShotDetected(final float fingerX, final float fingerY) {
+        Log.d("DEBUG", "onShotDetected!!!");
+        new ParticleSystem(this, 20, R.drawable.smallcubes, 1000)
+                .setSpeedRange(0.5f, 0.8f)
+                .setInitialRotationRange(0, 360)
+                .setRotationSpeed(144)
+                .setRotationSpeedRange(0.5f, 0.8f)
+                .setFadeOut(200)
+                .oneShot(mContainer, 50);
     }
 //
 //    private boolean checkCollision(Rect asteroidBounds, ImageView asteroid) {

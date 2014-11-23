@@ -8,8 +8,8 @@
     android:onClick="onClickSomething"
     tools:context=".MainActivity">
 
-    <com.dudes.android.blocks.Game
-        android:id="@+id/game"
+    <com.dudes.android.blocks.HudView
+        android:id="@+id/hudview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clickable="true"/>

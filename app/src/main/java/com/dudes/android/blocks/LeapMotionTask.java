@@ -13,13 +13,21 @@ import java.net.UnknownHostException;
  * User: mirko @ PressMatrix GmbH
  * Date: 23.11.2014 | Time: 12:28
  */
-public class LeapMotionTask extends AsyncTask<Void, Void, Void> {
-
+public class LeapMotionTask extends AsyncTask<Void, Float, Void> {
+    private static final float  ALPHA                           = 0.04f;
+    public static final float   PUBLISH_SHOT_DETECTED           = 100f;
+    public static final float   PUBLISH_FINGER_MOTION_DETECTED  = 101f;
 
     private Socket mSocket;
-    private static final float alpha = 0.04f;
-    private float[] thumbPositionOutput = new float[3];
-    private float[] fingerPositionOutput = new float[3];
+    private float[] mThumbPositionOutput = new float[3];
+    private float[] mFingerPositionOutput = new float[3];
+
+    private MotionListener mListener;
+    private boolean mIsShooting;
+
+    public LeapMotionTask(final MotionListener listener) {
+        mListener = listener;
+    }
 
     @Override
     protected Void doInBackground(Void... params) {
@@ -37,15 +45,23 @@ public class LeapMotionTask extends AsyncTask<Void, Void, Void> {
                     final float[] thumbPositions = {Float.parseFloat(positionStrings[0]), Float.parseFloat(positionStrings[1]), Float.parseFloat(positionStrings[2])};
                     final float[] fingerPositions = {Float.parseFloat(positionStrings[3]), Float.parseFloat(positionStrings[4]), Float.parseFloat(positionStrings[5])};
 
-                    final float[] smoothThumbPositions = applyLPF(thumbPositions, thumbPositionOutput);
-                    final float[] smoothFingerPositions = applyLPF(fingerPositions, fingerPositionOutput);
+                    final float[] smoothThumbPositions = applyLPF(thumbPositions, mThumbPositionOutput);
+                    final float[] smoothFingerPositions = applyLPF(fingerPositions, mFingerPositionOutput);
 
                     final float thumbX = smoothThumbPositions[0];
                     final float fingerX = smoothFingerPositions[0];
+                    final float fingerY = smoothFingerPositions[1];
                     final float deltaX = thumbX - fingerX;
+
                     if(Math.abs(deltaX) < 50) {
-                        Log.d("DEBUG", "BAM!!!");
+                        if(!mIsShooting) {
+                            publishProgress(PUBLISH_SHOT_DETECTED, fingerX, fingerY);
+                            mIsShooting = true;
+                        }
+                    } else {
+                        mIsShooting = false;
                     }
+                    publishProgress(PUBLISH_FINGER_MOTION_DETECTED, fingerX, fingerY);
                 }
             }
         } catch (UnknownHostException e) {
@@ -61,8 +77,35 @@ public class LeapMotionTask extends AsyncTask<Void, Void, Void> {
             return input;
 
         for (int i = 0; i < input.length; i++) {
-            output[i] = output[i] + alpha * (input[i] - output[i]);
+            output[i] = output[i] + ALPHA * (input[i] - output[i]);
         }
         return output;
+    }
+
+    @Override
+    protected void onProgressUpdate(final Float... values) {
+        super.onProgressUpdate(values);
+        if(values[0] == PUBLISH_SHOT_DETECTED) {
+            invokeShotDetected(values[1], values[2]);
+        } else {
+            invokeFingerMotionDetected(values[1], values[2]);
+        }
+    }
+
+    private void invokeShotDetected(final float fingerX, final float fingerY) {
+        if(mListener != null) {
+            mListener.onShotDetected(fingerX, fingerY);
+        }
+    }
+
+    private void invokeFingerMotionDetected(final float fingerX, final float fingerY) {
+        if(mListener != null) {
+            mListener.onFingerMotionDetected(fingerX, fingerY);
+        }
+    }
+
+    public interface MotionListener {
+        public void onFingerMotionDetected(final float fingerX, final float fingerY);
+        public void onShotDetected(final float fingerX, final float fingerY);
     }
 }
