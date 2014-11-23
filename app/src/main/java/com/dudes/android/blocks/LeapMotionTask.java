@@ -1,6 +1,7 @@
 package com.dudes.android.blocks;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,49 +18,35 @@ public class LeapMotionTask extends AsyncTask<Void, Void, Void> {
 
     private Socket mSocket;
     private static final float alpha = 0.04f;
-    private float[] positionOutput = new float[3];
-    private float[] rotationOutput = new float[3];
+    private float[] thumbPositionOutput = new float[3];
+    private float[] fingerPositionOutput = new float[3];
 
     @Override
     protected Void doInBackground(Void... params) {
         try {
-            mSocket = new Socket("192.168.0.25", 1337);
+            mSocket = new Socket("10.100.220.57", 1337);
+            Log.d("DEBUG", "### CONNECTED ###");
 
             BufferedReader input = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
-            String line = "";
+            String line;
 
-            while (isCancelled()) {
+            while (!isCancelled()) {
                 line = input.readLine();
-                if (line.contains(":")) {
-                    String[] rots = line.split(":")[0].split(",");
-                    String[] vals = line.split(":")[1].split(",");
-                    float[] inputPosition = {Float.parseFloat(vals[0]),
-                            Float.parseFloat(vals[1]),
-                            Float.parseFloat(vals[2])};
-                    float[] smoothVals = applyLPF(inputPosition, positionOutput);
+                if (line != null) {
+                    final String[] positionStrings = line.split(",");
+                    final float[] thumbPositions = {Float.parseFloat(positionStrings[0]), Float.parseFloat(positionStrings[1]), Float.parseFloat(positionStrings[2])};
+                    final float[] fingerPositions = {Float.parseFloat(positionStrings[3]), Float.parseFloat(positionStrings[4]), Float.parseFloat(positionStrings[5])};
 
-                    inputPosition = new float[]{
-                            Float.parseFloat(rots[0]),
-                            Float.parseFloat(rots[1]),
-                            Float.parseFloat(rots[2])};
+                    final float[] smoothThumbPositions = applyLPF(thumbPositions, thumbPositionOutput);
+                    final float[] smoothFingerPositions = applyLPF(fingerPositions, fingerPositionOutput);
 
-                    float[] smoothRots = applyLPF(inputPosition, rotationOutput);
-                    float x = smoothVals[0];
-                    float y = smoothVals[1];
-
-                    if (y < 200) {
-                        y = 200 - y;
-                    } else {
-                        y = y - 200;
+                    final float thumbX = smoothThumbPositions[0];
+                    final float fingerX = smoothFingerPositions[0];
+                    final float deltaX = thumbX - fingerX;
+                    if(Math.abs(deltaX) < 50) {
+                        Log.d("DEBUG", "BAM!!!");
                     }
-
-                    float z = smoothVals[2];
-
-                    float[] obj = {x, y, z, smoothRots[0]};
-//                    mMessenger.send(Message.obtain(null, MSG_SET_VALUE, obj));
-
                 }
-
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();

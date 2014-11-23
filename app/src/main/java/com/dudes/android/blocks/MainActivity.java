@@ -34,6 +34,7 @@ public class MainActivity extends Activity implements Game.OnShootListener {
 
         initBackground();
         initGame();
+        new LeapMotionTask().execute();
     }
 
     private void initGame() {
