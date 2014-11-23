@@ -4,6 +4,7 @@ import android.animation.*;
 import android.app.Activity;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -28,6 +29,8 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
     private AnimatorSet mCubeAnimSet;
     private boolean mIsCubeShot;
 
+    private SoundEffectHelper mSoundEffectHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +38,7 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
 
         mRandom = new Random();
         mMetrics = getResources().getDisplayMetrics();
+        mSoundEffectHelper = new SoundEffectHelper();
 
         initBackground();
         initGame();
@@ -144,6 +148,16 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
                 addAnimatedCube();
             }
         });
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(!mIsCubeShot) {
+                    mSoundEffectHelper.playWushSound();
+                }
+            }
+        }, 4000);
+
         mCubeAnimSet.start();
     }
 
@@ -188,6 +202,8 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
     public void onShotDetected(final float fingerX, final float fingerY) {
         final int x = (int) convertFingerXToScreenX(fingerX);
         final int y = (int) convertFingerYToScreenY(fingerY);
+        mSoundEffectHelper.playShootSound();
+
         if(mCubeRect.contains(x,y)){
             mHitAnimationView.setTranslationX(x);
             mHitAnimationView.setTranslationY(y);
@@ -199,6 +215,7 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
                     .setFadeOut(200)
                     .oneShot(mHitAnimationView, 50);
             mCubeAnimSet.cancel();
+            mSoundEffectHelper.playYaySound();
         }
     }
 //
