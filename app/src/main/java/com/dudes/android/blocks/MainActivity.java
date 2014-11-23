@@ -52,7 +52,7 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
 
         mMediaPlayer = MediaPlayer.create(this, R.raw.music2);
         mMediaPlayer.setLooping(true);
-        mMediaPlayer.setVolume(0.5f, 0.5f);
+        mMediaPlayer.setVolume(0.3f, 0.3f);
     }
 
 
