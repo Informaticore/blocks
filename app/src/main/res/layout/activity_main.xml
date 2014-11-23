@@ -5,7 +5,6 @@
     android:id="@+id/container"
     android:background="#ff388fff"
     android:clickable="true"
-    android:onClick="onClickSomething"
     tools:context=".MainActivity">
 
     <com.dudes.android.blocks.HudView

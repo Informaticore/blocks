@@ -23,6 +23,10 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
 
     private int[] mCubes = {R.drawable.cube001,R.drawable.cube002,R.drawable.cube003};
     private Rect mCubeRect;
+    private ImageView mCube;
+    private View mHitAnimationView;
+    private AnimatorSet mCubeAnimSet;
+    private boolean mIsCubeShot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,10 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
 
     private void initBackground() {
         mContainer = (RelativeLayout) findViewById(R.id.container);
+        mHitAnimationView = new View(this);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(50, 50);
+        mHitAnimationView.setLayoutParams(layoutParams);
+        mContainer.addView(mHitAnimationView);
     }
 
     private void executeLeapMotionTask() {
@@ -108,39 +116,35 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
 
     private void addAnimatedCube(){
         mCubeRect = new Rect();
-        final ImageView cube = new ImageView(this);
-        cube.setImageResource(mCubes[mRandom.nextInt(3)]);
-        mContainer.addView(cube, mContainer.getChildCount() - 1);
-        cube.setTranslationX(mRandom.nextInt(mMetrics.widthPixels));
-        cube.setTranslationY(0);
-        cube.setScaleY(0.0f);
-        cube.setScaleX(0.0f);
-        ObjectAnimator scaleX = ObjectAnimator.ofFloat(cube, "scaleX", 5.0f);
-        ObjectAnimator sclaeY = ObjectAnimator.ofFloat(cube, "scaleY", 5.0f);
-        ObjectAnimator rotation = ObjectAnimator.ofFloat(cube, "rotation", 100 + mRandom.nextInt(260));
-        ObjectAnimator translationY = ObjectAnimator.ofFloat(cube, "translationY", mMetrics.heightPixels + (200 * mMetrics.density));
+        mCube = new ImageView(this);
+        mCube.setImageResource(mCubes[mRandom.nextInt(3)]);
+        mContainer.addView(mCube, mContainer.getChildCount() - 1);
+        mCube.setTranslationX(mRandom.nextInt(mMetrics.widthPixels));
+        mCube.setTranslationY(0);
+        mCube.setScaleY(0.0f);
+        mCube.setScaleX(0.0f);
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(mCube, "scaleX", 5.0f);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(mCube, "scaleY", 5.0f);
+        ObjectAnimator rotation = ObjectAnimator.ofFloat(mCube, "rotation", 100 + mRandom.nextInt(260));
+        ObjectAnimator translationY = ObjectAnimator.ofFloat(mCube, "translationY", mMetrics.heightPixels + (200 * mMetrics.density));
         translationY.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                mCubeRect.set((int)(cube.getTranslationX()), (int)(cube.getTop() + cube.getTranslationY()), (int) (cube.getRight() + cube.getTranslationX()), (int)(cube.getBottom() + cube.getTranslationY()));
+                mCubeRect.set((int)(mCube.getTranslationX()), (int)(mCube.getTop() + mCube.getTranslationY()), (int) ((mCube.getRight() * mCube.getScaleX()) + mCube.getTranslationX()), (int)((mCube.getBottom()* mCube.getScaleX()) + mCube.getTranslationY()));
             }
         });
-        AnimatorSet animSet = new AnimatorSet();
-        animSet.setDuration(3000);
-        animSet.playTogether(scaleX, sclaeY, translationY, rotation);
-        animSet.addListener(new AnimatorListenerAdapter() {
+        mCubeAnimSet = new AnimatorSet();
+        mCubeAnimSet.setDuration(6000);
+        mCubeAnimSet.playTogether(scaleX, scaleY, translationY, rotation);
+        mCubeAnimSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                mContainer.removeView(cube);
+                mContainer.removeView(mCube);
                 addAnimatedCube();
             }
         });
-        animSet.start();
-    }
-
-    public void onClickSomething(View view) {
-
+        mCubeAnimSet.start();
     }
 
     @Override
@@ -148,13 +152,16 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
         Log.d("DEBUG", " :: onShoot :: x:" + x + " y:"+ y);
         Log.d("DEBUG", " :: onShoot :: " + mCubeRect);
         if(mCubeRect.contains(x,y)){
+            mHitAnimationView.setTranslationX(x);
+            mHitAnimationView.setTranslationY(y);
             new ParticleSystem(this, 20, R.drawable.smallcubes, 1000)
                     .setSpeedRange(0.5f, 0.8f)
                     .setInitialRotationRange(0, 360)
                     .setRotationSpeed(144)
                     .setRotationSpeedRange(0.5f, 0.8f)
                     .setFadeOut(200)
-                    .oneShot(mContainer, 50);
+                    .oneShot(mHitAnimationView, 50);
+            mCubeAnimSet.cancel();
         }
     }
 

@@ -35,7 +35,6 @@ public class HudView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-//        canvas.drawCircle(mX, mY, 30, mThingPaint);
         canvas.drawBitmap(mHud, mX, mY, mThingPaint);
     }
 
@@ -43,11 +42,11 @@ public class HudView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
         switch(action){
-            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_DOWN:
                 mX = event.getX() - mHud.getWidth() /2;
                 mY = event.getY() - mHud.getHeight() /2;
                 if(mListener != null){
-                    mListener.onShoot((int) mX, (int) mY);
+                    mListener.onShoot((int)event.getX(), (int)event.getY());
                 }
                 invalidate();
                 return false;
