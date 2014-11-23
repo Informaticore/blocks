@@ -16,6 +16,7 @@ public class Game extends View {
     private float mThingX;
     private float mThingY;
     private Paint mThingPaint;
+    private OnShootListener mListener;
 
     public Game(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -25,6 +26,10 @@ public class Game extends View {
         mThingPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         mHud = BitmapFactory.decodeResource(getResources(), R.drawable.hud);
+    }
+
+    public void setOnShootListener(final OnShootListener listener){
+        mListener = listener;
     }
 
     @Override
@@ -38,12 +43,19 @@ public class Game extends View {
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
         switch(action){
-            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_UP:
                 mThingX = event.getX() - mHud.getWidth() /2;
                 mThingY = event.getY() - mHud.getHeight() /2;
+                if(mListener != null){
+                    mListener.onShoot((int)mThingX, (int)mThingY);
+                }
                 invalidate();
                 return false;
         }
         return super.onTouchEvent(event);
+    }
+
+    public interface OnShootListener{
+        public void onShoot(int x, int y);
     }
 }
