@@ -167,23 +167,39 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
 
     @Override
     public void onFingerMotionDetected(final float fingerX, final float fingerY) {
+        final float x = convertFingerXToScreenX(fingerX);
+        final float y = convertFingerYToScreenY(fingerY);
+        mHudView.setPosition(x, y);
+    }
+
+    private float convertFingerXToScreenX(final float fingerX) {
         final int screenWidth = mMetrics.widthPixels;
-        final int screenHeight = mMetrics.heightPixels;
         final int factorX = screenWidth / 200;
+        return screenWidth / 2 + fingerX * factorX;
+    }
+
+    private float convertFingerYToScreenY(final float fingerY) {
+        final int screenHeight = mMetrics.heightPixels;
         final int factorY = screenHeight / 300;
-        mHudView.setPosition(screenWidth / 2 + fingerX * factorX, screenHeight - fingerY * factorY);
+        return screenHeight - fingerY * factorY;
     }
 
     @Override
     public void onShotDetected(final float fingerX, final float fingerY) {
-        Log.d("DEBUG", "onShotDetected!!!");
-        new ParticleSystem(this, 20, R.drawable.smallcubes, 1000)
-                .setSpeedRange(0.5f, 0.8f)
-                .setInitialRotationRange(0, 360)
-                .setRotationSpeed(144)
-                .setRotationSpeedRange(0.5f, 0.8f)
-                .setFadeOut(200)
-                .oneShot(mContainer, 50);
+        final int x = (int) convertFingerXToScreenX(fingerX);
+        final int y = (int) convertFingerYToScreenY(fingerY);
+        if(mCubeRect.contains(x,y)){
+            mHitAnimationView.setTranslationX(x);
+            mHitAnimationView.setTranslationY(y);
+            new ParticleSystem(this, 20, R.drawable.smallcubes, 1000)
+                    .setSpeedRange(0.5f, 0.8f)
+                    .setInitialRotationRange(0, 360)
+                    .setRotationSpeed(144)
+                    .setRotationSpeedRange(0.5f, 0.8f)
+                    .setFadeOut(200)
+                    .oneShot(mHitAnimationView, 50);
+            mCubeAnimSet.cancel();
+        }
     }
 //
 //    private boolean checkCollision(Rect asteroidBounds, ImageView asteroid) {
