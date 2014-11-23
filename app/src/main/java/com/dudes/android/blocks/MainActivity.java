@@ -29,6 +29,8 @@ public class MainActivity extends Activity {
         mMetrics = getResources().getDisplayMetrics();
 
         initBackground();
+
+        new LeapMotionTask().execute();
     }
 
     private void initBackground() {
