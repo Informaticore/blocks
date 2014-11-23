@@ -23,7 +23,6 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
 
     private int[] mCubes = {R.drawable.cube001,R.drawable.cube002,R.drawable.cube003};
     private Rect mCubeRect;
-    private boolean mIsShooting;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,7 +160,11 @@ public class MainActivity extends Activity implements HudView.OnShootListener, L
 
     @Override
     public void onFingerMotionDetected(final float fingerX, final float fingerY) {
-        mHudView.setPosition(fingerX, fingerY);
+        final int screenWidth = mMetrics.widthPixels;
+        final int screenHeight = mMetrics.heightPixels;
+        final int factorX = screenWidth / 200;
+        final int factorY = screenHeight / 300;
+        mHudView.setPosition(screenWidth / 2 + fingerX * factorX, screenHeight - fingerY * factorY);
     }
 
     @Override

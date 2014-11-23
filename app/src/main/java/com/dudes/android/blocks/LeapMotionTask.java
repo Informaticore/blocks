@@ -42,18 +42,15 @@ public class LeapMotionTask extends AsyncTask<Void, Float, Void> {
                 line = input.readLine();
                 if (line != null) {
                     final String[] positionStrings = line.split(",");
-                    final float[] thumbPositions = {Float.parseFloat(positionStrings[0]), Float.parseFloat(positionStrings[1]), Float.parseFloat(positionStrings[2])};
-                    final float[] fingerPositions = {Float.parseFloat(positionStrings[3]), Float.parseFloat(positionStrings[4]), Float.parseFloat(positionStrings[5])};
+                    final float[] fingerPositions = {Float.parseFloat(positionStrings[0]), Float.parseFloat(positionStrings[1]), Float.parseFloat(positionStrings[2])};
 
-                    final float[] smoothThumbPositions = applyLPF(thumbPositions, mThumbPositionOutput);
                     final float[] smoothFingerPositions = applyLPF(fingerPositions, mFingerPositionOutput);
 
-                    final float thumbX = smoothThumbPositions[0];
                     final float fingerX = smoothFingerPositions[0];
                     final float fingerY = smoothFingerPositions[1];
-                    final float deltaX = thumbX - fingerX;
+                    final float deltaX = Float.parseFloat(positionStrings[3]);
 
-                    if(Math.abs(deltaX) < 50) {
+                    if(Math.abs(deltaX) < 70) {
                         if(!mIsShooting) {
                             publishProgress(PUBLISH_SHOT_DETECTED, fingerX, fingerY);
                             mIsShooting = true;
